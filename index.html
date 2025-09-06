@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>肥胖风险数据可视化大屏 - 最终版</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- 网格背景 -->
+    <div class="grid-bg"></div>
+    
+    <!-- 数据状态指示器 -->
+    <div class="data-status">
+        <span class="status-indicator status-active"></span>
+        数据实时更新中...
+        <div>最后更新: <span id="last-update">--</span></div>
+    </div>
+
+    <div class="container">
+                    <div class="header">
+                <div class="logo">肥胖风险数据可视化大屏</div>
+                <div class="clock" id="clock"></div>
+            </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h3 style="text-align: center; margin-bottom: 20px;">📊 核心指标</h3>
+                <div class="kpi-grid">
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="total-samples">0</div>
+                        <div class="kpi-label">总样本数</div>
+                        <div class="kpi-trend trend-up" id="samples-trend">↗ +12</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-bmi">0.0</div>
+                        <div class="kpi-label">平均BMI</div>
+                        <div class="kpi-trend trend-stable" id="bmi-trend">→ 0.0</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="obesity-rate">0%</div>
+                        <div class="kpi-label">肥胖率</div>
+                        <div class="kpi-trend trend-up" id="obesity-trend">↗ +2.1%</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-age">0</div>
+                        <div class="kpi-label">平均年龄</div>
+                        <div class="kpi-trend trend-stable" id="age-trend">→ 0.0</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-weight">0.0</div>
+                        <div class="kpi-label">平均体重(kg)</div>
+                        <div class="kpi-trend trend-up" id="weight-trend">↗ +0.3</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-height">0.0</div>
+                        <div class="kpi-label">平均身高(m)</div>
+                        <div class="kpi-trend trend-stable" id="height-trend">→ 0.00</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="high-risk-count">0</div>
+                        <div class="kpi-label">高风险人数</div>
+                        <div class="kpi-trend trend-up" id="risk-trend">↗ +5</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="data-quality">0%</div>
+                        <div class="kpi-label">数据质量</div>
+                        <div class="kpi-trend trend-stable" id="quality-trend">→ 98.5%</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-faf">0.0</div>
+                        <div class="kpi-label">平均运动频率</div>
+                        <div class="kpi-trend trend-up" id="faf-trend">↗ +0.1</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-fcvc">0.0</div>
+                        <div class="kpi-label">平均蔬菜摄入</div>
+                        <div class="kpi-trend trend-up" id="fcvc-trend">↗ +0.2</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-ch2o">0.0L</div>
+                        <div class="kpi-label">平均水分摄入</div>
+                        <div class="kpi-trend trend-up" id="ch2o-trend">↗ +0.1L</div>
+                    </div>
+                    <div class="kpi-item">
+                        <div class="kpi-value" id="avg-tue">0.0h</div>
+                        <div class="kpi-label">平均设备使用</div>
+                        <div class="kpi-trend trend-down" id="tue-trend">↘ -0.1h</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel chart-container">
+                <div class="chart-title">📊 肥胖风险分布热力图</div>
+                <div class="chart-selector">
+                    <select id="chart-type" onchange="app.switchChart()">
+                        <option value="heatmap">热力图</option>
+                        <option value="bubble">气泡图</option>
+                        <option value="treemap">矩形树图</option>
+                        <option value="sunburst">旭日图</option>
+                        <option value="sankey">桑基图</option>
+                    </select>
+                </div>
+                <div class="chart-wrapper">
+                    <div id="main-chart"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="charts-grid">
+                    <div class="chart-panel" onclick="app.openModal('radar', '📈 健康指标雷达图')">
+                        <h4 style="text-align: center; margin-bottom: 15px;">📈 健康指标雷达图</h4>
+                        <div id="radar-chart"></div>
+                    </div>
+                    <div class="chart-panel" onclick="app.openModal('pie', '🍰 肥胖等级分布')">
+                        <h4 style="text-align: center; margin-bottom: 15px;">🍰 肥胖等级分布</h4>
+                        <div id="pie-chart"></div>
+                    </div>
+                    <div class="chart-panel" onclick="app.openModal('line', '📉 BMI趋势变化')">
+                        <h4 style="text-align: center; margin-bottom: 15px;">📉 BMI趋势变化</h4>
+                        <div id="line-chart"></div>
+                    </div>
+                    <div class="chart-panel" onclick="app.openModal('bar', '📊 年龄分布')">
+                        <h4 style="text-align: center; margin-bottom: 15px;">📊 年龄分布</h4>
+                        <div id="bar-chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel water-flow">
+            <div class="flow-stats">
+                <div class="flow-value" id="water-flow-value">0.0L</div>
+                <div class="flow-label">实时水流入量</div>
+            </div>
+            <div class="water-drops" id="water-drops"></div>
+        </div>
+    </div>
+
+    <!-- 图表弹窗 -->
+    <div id="chart-modal" class="chart-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">图表详情</h3>
+                <span class="close-btn" onclick="app.closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="modal-chart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载JavaScript模块 -->
+    <script src="js/data-manager.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/data-loader.js"></script>
+    
+    <!-- 主应用脚本 -->
+    <script>
+        // 主应用类
+        class DashboardApp {
+            constructor() {
+                this.dataManager = new DataManager();
+                this.chartManager = new ChartManager();
+                this.animationManager = new AnimationManager();
+                this.timers = [];
+            }
+
+            // 初始化应用
+            async init() {
+                console.log('🚀 初始化数据可视化大屏...');
+                
+                // 加载CSV数据
+                await this.dataManager.loadCSVData();
+                
+                // 设置全局数据
+                window.realData = this.dataManager.getData();
+                
+                // 初始化动画
+                this.animationManager.initAnimations();
+                
+                // 初始化图表
+                setTimeout(() => {
+                    this.chartManager.initCharts();
+                }, 500);
+                
+                // 初始化定时器
+                this.initTimers();
+                
+                // 绑定事件
+                this.bindEvents();
+                
+                console.log('✅ 大屏初始化完成！');
+            }
+
+            // 初始化定时器
+            initTimers() {
+                // 时钟更新
+                this.timers.push(setInterval(() => {
+                    this.animationManager.updateClock();
+                }, 1000));
+
+                // 水滴动画
+                this.timers.push(setInterval(() => {
+                    this.animationManager.createWaterDrop();
+                }, 500));
+
+                // 批量数据加载（每5秒）
+                this.timers.push(setInterval(() => {
+                    const hasNewData = this.dataManager.loadBatchData();
+                    if (hasNewData) {
+                        this.dataManager.updateKPIs();
+                        this.chartManager.updateCharts();
+                    }
+                }, 5000));
+
+                // 图表更新（每3秒）
+                this.timers.push(setInterval(() => {
+                    this.chartManager.updateCharts();
+                }, 3000));
+            }
+
+            // 绑定事件
+            bindEvents() {
+                // 窗口大小改变
+                window.addEventListener('resize', () => {
+                    this.chartManager.resizeCharts();
+                });
+
+                // KPI卡片悬停效果
+                document.querySelectorAll('.kpi-item').forEach(item => {
+                    item.addEventListener('mouseenter', () => {
+                        this.animationManager.animateKPICard(item);
+                    });
+                });
+
+                // 图表面板悬停效果
+                document.querySelectorAll('.chart-panel').forEach(panel => {
+                    panel.addEventListener('mouseenter', () => {
+                        this.animationManager.flashElement(panel);
+                    });
+                });
+
+                // 弹窗外部点击关闭
+                document.getElementById('chart-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'chart-modal') {
+                        this.closeModal();
+                    }
+                });
+
+                // ESC键关闭弹窗
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeModal();
+                    }
+                });
+            }
+
+            // 切换图表
+            switchChart() {
+                const chartType = document.getElementById('chart-type').value;
+                this.chartManager.switchChart(chartType);
+            }
+
+            // 打开弹窗
+            openModal(chartType, title) {
+                const modal = document.getElementById('chart-modal');
+                const modalTitle = document.getElementById('modal-title');
+                const modalChart = document.getElementById('modal-chart');
+                
+                console.log('打开弹窗:', chartType, title);
+                console.log('弹窗容器:', modalChart);
+                console.log('弹窗显示状态:', modal.style.display);
+                
+                modalTitle.textContent = title;
+                modal.style.display = 'block';
+                
+                // 确保容器是空的
+                modalChart.innerHTML = '';
+                
+                // 等待弹窗完全显示后再创建图表
+                setTimeout(() => {
+                    console.log('开始创建图表，容器尺寸:', modalChart.offsetWidth, 'x', modalChart.offsetHeight);
+                    this.chartManager.createModalChart(chartType, modalChart);
+                }, 300);
+            }
+
+            // 关闭弹窗
+            closeModal() {
+                const modal = document.getElementById('chart-modal');
+                const modalChart = document.getElementById('modal-chart');
+                
+                console.log('关闭弹窗');
+                
+                // 清理ChartManager中的实例
+                if (this.chartManager.currentModalChart) {
+                    try {
+                        this.chartManager.currentModalChart.dispose();
+                        console.log('ChartManager中的实例已销毁');
+                    } catch (error) {
+                        console.log('销毁ChartManager实例时出错:', error);
+                    }
+                    this.chartManager.currentModalChart = null;
+                }
+                
+                // 销毁ECharts实例
+                if (modalChart._echarts_instance_) {
+                    const chart = echarts.getInstanceByDom(modalChart);
+                    if (chart) {
+                        chart.dispose();
+                        console.log('ECharts实例已销毁');
+                    }
+                }
+                
+                // 清理容器
+                modalChart.innerHTML = '';
+                modal.style.display = 'none';
+            }
+
+            // 清理资源
+            cleanup() {
+                this.timers.forEach(timer => clearInterval(timer));
+                this.animationManager.cleanup();
+            }
+        }
+
+        // 创建应用实例
+        const app = new DashboardApp();
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+
+        // 页面卸载时清理资源
+        window.addEventListener('beforeunload', () => {
+            app.cleanup();
+        });
+    </script>
+</body>
+</html>
+liu a
